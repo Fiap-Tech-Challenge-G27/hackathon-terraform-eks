@@ -63,7 +63,7 @@ resource "aws_iam_role" "roleNodeSecrets" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            replace("${aws_eks_cluster.clusterTechChallenge.identity.0.oidc.0.issuer}:sub", "https://", "") = "system:serviceaccount:default:irsasecrets"
+            replace("${aws_eks_cluster.clusterFiapHackathon.identity.0.oidc.0.issuer}:sub", "https://", "") = "system:serviceaccount:default:irsasecrets"
           }
         }
       },
@@ -116,8 +116,8 @@ resource "aws_iam_role_policy_attachment" "ec2PolicyRoleNodeEKS" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
 }
 
-resource "aws_eks_cluster" "clusterTechChallenge" {
-  name     = "techchallenge"
+resource "aws_eks_cluster" "clusterFiapHackathon" {
+  name     = "fiap-hackathon"
   role_arn = aws_iam_role.roleEKS.arn
 
   vpc_config {
@@ -130,9 +130,9 @@ resource "aws_eks_cluster" "clusterTechChallenge" {
   ]
 }
 
-resource "aws_eks_node_group" "appNodeGroupTechChallenge" {
-  cluster_name    = aws_eks_cluster.clusterTechChallenge.name
-  node_group_name = "appNodeTechChallenge"
+resource "aws_eks_node_group" "appNodeGroupFiapHackathon" {
+  cluster_name    = aws_eks_cluster.clusterFiapHackathon.name
+  node_group_name = "appNodeFiapHackathon"
   node_role_arn   = aws_iam_role.roleNodeEKS.arn
   subnet_ids      = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
 
@@ -158,11 +158,11 @@ resource "aws_eks_node_group" "appNodeGroupTechChallenge" {
 }
 
 data "tls_certificate" "thumbprint_eks" {
-  url = aws_eks_cluster.clusterTechChallenge.identity.0.oidc.0.issuer
+  url = aws_eks_cluster.clusterFiapHackathon.identity.0.oidc.0.issuer
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_eks" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.thumbprint_eks.certificates.0.sha1_fingerprint]
-  url             = aws_eks_cluster.clusterTechChallenge.identity.0.oidc.0.issuer
+  url             = aws_eks_cluster.clusterFiapHackathon.identity.0.oidc.0.issuer
 }

@@ -10,14 +10,6 @@ data "aws_subnet" "subnet2" {
   id = "subnet-049335028e498c087"
 }
 
-data "terraform_remote_state" "rds" {
-  backend = "s3"
-  config = {
-    bucket = "techchallengestate-g27"
-    key    = "terraform-rds/terraform.tfstate"
-    region = var.aws-region
-  }
-}
 
 # data "terraform_remote_state" "documentdb" {
 #   backend = "s3"
