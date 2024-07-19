@@ -11,11 +11,11 @@ data "aws_subnet" "subnet2" {
 }
 
 
-# data "terraform_remote_state" "documentdb" {
-#   backend = "s3"
-#   config = {
-#     bucket = "techchallengestate-g27"
-#     key    = "-hackathon-terraform-documentdb/terraform.tfstate"
-#     region = var.aws-region
-#   }
-# }
+data "terraform_remote_state" "documentdb" {
+  backend = "s3"
+  config = {
+    bucket = "techchallengestate-g27"
+    key    = "hackathon-terraform-documentdb/terraform.tfstate"
+    region = var.aws-region
+  }
+}
