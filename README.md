@@ -1,1 +1,3 @@
-# hackathon-terraform-eks
+# terraform-eks
+
+Deploy automatizado via GitHub Actions
