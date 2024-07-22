@@ -18,45 +18,24 @@ spec:
   rules:
   - http:
       paths:
-      - path: /customers
+      - path: /medicos
         pathType: Prefix
         backend:
           service:
-            name: ms-cliente
+            name: ms-medicos
             port:
               number: 3000
-      # - path: /products
-      #   pathType: Prefix
-      #   backend:
-      #     service:
-      #       name: ms-producao
-      #       port:
-      #         number: 3000
-      # - path: /categories
-      #   pathType: Prefix
-      #   backend:
-      #     service:
-      #       name: ms-producao
-      #       port:
-      #         number: 3000
-      # - path: /orders
-      #   pathType: Prefix
-      #   backend:
-      #     service:
-      #       name: ms-producao
-      #       port:
-      #         number: 3000
-      # - path: /initiate
-      #   pathType: Prefix
-      #   backend:
-      #     service:
-      #       name: ms-pagamento
-      #       port:
-      #         number: 3000
-      # - path: /payment
-      #   pathType: Prefix
-      #   backend:
-      #     service:
-      #       name: sistema-de-pagamento
-      #       port:
-      #         number: 3000
+      - path: /pacientes
+        pathType: Prefix
+        backend:
+          service:
+            name: ms-pacientes
+            port:
+              number: 3000
+      - path: /consultas
+        pathType: Prefix
+        backend:
+          service:
+            name: ms-consultas
+            port:
+              number: 3000
