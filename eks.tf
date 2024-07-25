@@ -11,19 +11,6 @@ data "aws_iam_policy_document" "policyDocEKS" {
   }
 }
 
-data "aws_iam_policy_document" "policyDocNodeEKS" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
 resource "aws_iam_role" "roleEKS" {
   name               = "roleEKS"
   assume_role_policy = data.aws_iam_policy_document.policyDocEKS.json
@@ -44,33 +31,6 @@ resource "aws_iam_role" "roleEKS" {
   }
 }
 
-resource "aws_iam_role" "roleNodeEKS" {
-  name = "roleNodeEKS"
-  assume_role_policy = data.aws_iam_policy_document.policyDocNodeEKS.json
-}
-
-resource "aws_iam_role" "roleNodeSecrets" {
-  name = "roleNodeSecrets"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.oidc_eks.arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            replace("${aws_eks_cluster.clusterFiapHackathon.identity.0.oidc.0.issuer}:sub", "https://", "") = "system:serviceaccount:default:irsasecrets"
-          }
-        }
-      },
-    ]
-  })
-}
-
 resource "aws_iam_role_policy_attachment" "policyEKSAmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.roleEKS.name
@@ -79,41 +39,6 @@ resource "aws_iam_role_policy_attachment" "policyEKSAmazonEKSClusterPolicy" {
 resource "aws_iam_role_policy_attachment" "policyEKSAmazonEKSVPCResourceController" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
   role       = aws_iam_role.roleEKS.name
-}
-
-resource "aws_iam_role_policy_attachment" "policyRoleNodeEKS" {
-  role       = aws_iam_role.roleNodeEKS.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "cniPolicyRoleNodeEKS" {
-  role       = aws_iam_role.roleNodeEKS.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecrPolicyRoleNodeEKS" {
-  role       = aws_iam_role.roleNodeEKS.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-resource "aws_iam_role_policy_attachment" "elbPolicyRoleNodeEKS" {
-  role       = aws_iam_role.roleNodeEKS.name
-  policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "secrets_rds_policy_attachment" {
-  role       = aws_iam_role.roleNodeSecrets.name
-  policy_arn = data.terraform_remote_state.rds.outputs.secrets_policy
-}
-
-resource "aws_iam_role_policy_attachment" "secrets_documentdb_policy_attachment" {
-  role       = aws_iam_role.roleNodeSecrets.name
-  policy_arn = data.terraform_remote_state.documentdb.outputs.secrets_policy
-}
-
-resource "aws_iam_role_policy_attachment" "ec2PolicyRoleNodeEKS" {
-  role       = aws_iam_role.roleNodeEKS.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
 }
 
 resource "aws_eks_cluster" "clusterFiapHackathon" {
@@ -130,30 +55,40 @@ resource "aws_eks_cluster" "clusterFiapHackathon" {
   ]
 }
 
-resource "aws_eks_node_group" "appNodeGroupFiapHackathon" {
-  cluster_name    = aws_eks_cluster.clusterFiapHackathon.name
-  node_group_name = "appNodeFiapHackathon"
-  node_role_arn   = aws_iam_role.roleNodeEKS.arn
-  subnet_ids      = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
+resource "aws_iam_role" "roleFargate" {
+  name = "roleFargate"
 
-  instance_types = ["t3.large"] 
-  disk_size      = 20   
-  tags = {
-    "Name" = "eks-node-app"
-  }
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "eks-fargate-pods.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      },
+    ]
+  })
+}
 
-  capacity_type = "SPOT"
+resource "aws_iam_role_policy_attachment" "fargatePolicyRoleFargate" {
+  role       = aws_iam_role.roleFargate.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+}
 
-  scaling_config {
-    desired_size = 3
-    max_size     = 7
-    min_size     = 1
+resource "aws_eks_fargate_profile" "fargateProfileFiapHackathon" {
+  cluster_name = aws_eks_cluster.clusterFiapHackathon.name
+  fargate_profile_name = "fargateProfileFiapHackathon"
+  pod_execution_role_arn = aws_iam_role.roleFargate.arn
+  subnet_ids = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
+
+  selector {
+    namespace = "default"
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.policyRoleNodeEKS,
-    aws_iam_role_policy_attachment.cniPolicyRoleNodeEKS,
-    aws_iam_role_policy_attachment.ec2PolicyRoleNodeEKS,
+    aws_iam_role_policy_attachment.fargatePolicyRoleFargate,
   ]
 }
 
