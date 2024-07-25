@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "policyDocEKS" {
 }
 
 resource "aws_iam_role" "roleEKS" {
-  name               = "roleEKS"
+  name               = "roleEKSFargate"
   assume_role_policy = data.aws_iam_policy_document.policyDocEKS.json
 
   inline_policy {
