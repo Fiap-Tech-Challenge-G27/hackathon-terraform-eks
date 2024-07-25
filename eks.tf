@@ -45,7 +45,7 @@ resource "aws_iam_role" "roleEKS" {
 }
 
 resource "aws_iam_role" "roleNodeEKS" {
-  name = "roleNodeEKS"
+  name = "roleNodeEKSHackathon"
   assume_role_policy = data.aws_iam_policy_document.policyDocNodeEKS.json
 }
 
