@@ -101,10 +101,10 @@ resource "aws_iam_role_policy_attachment" "elbPolicyRoleNodeEKS" {
   policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "secrets_rds_policy_attachment" {
-  role       = aws_iam_role.roleNodeSecrets.name
-  policy_arn = data.terraform_remote_state.rds.outputs.secrets_policy
-}
+#resource "aws_iam_role_policy_attachment" "secrets_rds_policy_attachment" {
+ # role       = aws_iam_role.roleNodeSecrets.name
+  #policy_arn = data.terraform_remote_state.rds.outputs.secrets_policy
+#}
 
 resource "aws_iam_role_policy_attachment" "secrets_documentdb_policy_attachment" {
   role       = aws_iam_role.roleNodeSecrets.name
