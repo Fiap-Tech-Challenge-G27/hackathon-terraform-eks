@@ -6,6 +6,6 @@ resource "aws_ecr_repository" "ms-consultas" {
   name = "ms-consultas"
 }
 
-resource "aws_ecr_repository" "ms-consultas" {
+resource "aws_ecr_repository" "ms-pacientes" {
   name = "ms-pacientes"
 }
