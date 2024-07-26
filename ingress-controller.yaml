@@ -18,21 +18,21 @@ spec:
   rules:
   - http:
       paths:
-      - path: /medicos
+      - path: /doctors
         pathType: Prefix
         backend:
           service:
             name: ms-medicos
             port:
               number: 3000
-      - path: /pacientes
+      - path: /patients
         pathType: Prefix
         backend:
           service:
             name: ms-pacientes
             port:
               number: 3000
-      - path: /consultas
+      - path: /appointments
         pathType: Prefix
         backend:
           service:
