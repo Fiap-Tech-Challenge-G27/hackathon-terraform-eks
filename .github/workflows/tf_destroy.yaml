@@ -25,4 +25,5 @@ jobs:
         run: |
             terraform init
             terraform plan -target=aws_eks_node_group.appNodeGroupFiapHackathon -target=aws_eks_cluster.clusterFiapHackathon -target=tls_certificate.thumbprint_eks -target=aws_iam_openid_connect_provider.oidc_eks -destroy
-            terraform destroy -target=aws_eks_node_group.appNodeGroupFiapHackathon -target=aws_eks_cluster.clusterFiapHackathon -target=tls_certificate.thumbprint_eks -target=aws_iam_openid_connect_provider.oidc_eks -auto-approve
+            # terraform destroy -target=aws_eks_node_group.appNodeGroupFiapHackathon -target=aws_eks_cluster.clusterFiapHackathon -target=tls_certificate.thumbprint_eks -target=aws_iam_openid_connect_provider.oidc_eks -auto-approve
+            terraform destroy -auto-approve
